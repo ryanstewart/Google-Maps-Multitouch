@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" 
+					   xmlns:maps="com.google.maps.*"
+					   creationComplete="windowedapplication1_creationCompleteHandler(event)">
+	<fx:Script source="userdata.as" />
+	<fx:Script>
+		<![CDATA[
+			import com.google.maps.LatLng;
+			import com.google.maps.MapAction;
+			import com.google.maps.MapEvent;
+			import com.google.maps.MapMouseEvent;
+			import com.google.maps.MapOptions;
+			import com.google.maps.MapType;
+			import com.google.maps.View;
+			import com.google.maps.geom.Attitude;
+			import com.google.maps.overlays.Marker;
+			import com.google.maps.overlays.MarkerOptions;
+			
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			
+			import spark.components.Application;
+			
+			protected var _zoomOutCounter:Number = 0;
+			protected var _zoomInCounter:Number = 0;
+
+			protected function map_preinitializeHandler(event:FlexEvent):void
+			{
+				var options:MapOptions = new MapOptions();
+					options.center = new LatLng(47.343,-121.23432);
+					options.viewMode = View.VIEWMODE_PERSPECTIVE;
+					options.attitude = new Attitude(0,0,0);
+					options.zoom = 12;
+					options.doubleClickMode = MapAction.ACTION_NOTHING;
+					
+				map.setInitOptions(options);
+			}
+
+
+			protected function map_mapevent_mapreadyHandler(event:MapEvent):void
+			{
+				map.setMapType(MapType.PHYSICAL_MAP_TYPE);
+			}
+
+
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{				
+				addEventListener(ResizeEvent.RESIZE,onResize);
+				map.addEventListener(TransformGestureEvent.GESTURE_ZOOM,onGestureZoom);
+				map.addEventListener(TransformGestureEvent.GESTURE_ROTATE,onGestureRotate);
+				map.addEventListener(TransformGestureEvent.GESTURE_PAN,onGesturePan);
+				map.addEventListener(GestureEvent.GESTURE_TWO_FINGER_TAP,onGestureTwoFingerTap);
+				map.addEventListener(MapMouseEvent.DOUBLE_CLICK,onMapDoubleClick);
+			}
+			
+			protected function onResize(event:ResizeEvent):void
+			{
+				if(map)
+				{
+					
+					target.x = map.width/2;
+					target.y = map.height/2;	
+				}
+				
+				
+			}
+			
+			protected function onGestureZoom(event:TransformGestureEvent):void
+			{
+				
+				if(event.scaleX > 1)
+				{
+					_zoomInCounter += event.scaleX;
+					if(_zoomInCounter > 10)
+					{
+						map.zoomIn();
+						_zoomInCounter = 0;
+					}
+				} else if (event.scaleX < 1)
+				{
+					_zoomOutCounter += event.scaleX;
+					if(_zoomOutCounter > 10)
+					{
+						map.zoomOut();
+						_zoomOutCounter = 0;
+					}
+				}
+			}
+			
+			protected function onGestureRotate(event:TransformGestureEvent):void
+			{
+				var att:Attitude = map.getAttitude();
+				map.setAttitude(new Attitude(att.yaw+event.rotation,att.pitch,att.roll));
+			}
+			
+			protected function onGesturePan(event:TransformGestureEvent):void
+			{
+				var att:Attitude = map.getAttitude();
+				map.setAttitude(new Attitude(att.yaw,Math.min(70,att.pitch+event.offsetX*-1),att.roll));
+			}
+		
+			
+			protected function onGestureTwoFingerTap(event:GestureEvent):void
+			{
+				var center:LatLng = new LatLng(map.getCenter().lat(),map.getCenter().lng());
+				map.flyTo(center,15,map.getAttitude(),5);
+			}
+			
+			protected function onMapDoubleClick(event:MapMouseEvent):void
+			{
+				var opt:MarkerOptions = new MarkerOptions();
+					opt.hasShadow = true;
+				var marker:Marker = new Marker(event.latLng,opt)
+					marker.addEventListener(MapMouseEvent.DOUBLE_CLICK,onMarkerDoubleClick);
+				
+				map.addOverlay(marker);
+			}
+			
+			protected function onMarkerDoubleClick(event:MapMouseEvent):void
+			{
+				map.removeOverlay(event.target as Marker);
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<maps:Map3D id="map" preinitialize="map_preinitializeHandler(event)" width="100%" height="100%"
+				key="{YOUR_GOOGLE_MAPS_KEY_HERE}" 
+				url="http://blog.digitalbackcountry.com/" mapevent_mapready="map_mapevent_mapreadyHandler(event)"/>
+	<s:Graphic id="target">
+		<s:Ellipse height="10" width="10">
+			<s:fill>
+				<s:SolidColor color="0x0000ff" alpha=".5" />
+			</s:fill>
+		</s:Ellipse>
+	</s:Graphic>
+</s:WindowedApplication>

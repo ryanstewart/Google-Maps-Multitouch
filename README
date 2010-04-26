@@ -1,0 +1,11 @@
+A quick demo that shows off how to use the multitouch APIs
+in AIR 2 by allowing the user to control a Google Map.
+
+The pinch gesture zooms in and out, the pan gesture changes 
+the 3D perspective and the double finger tap flys to the center
+of the map.
+
+You can grab the AIR 2 beta on http://labs.adobe.com/
+
+=Ryan
+ryan@adobe.com
