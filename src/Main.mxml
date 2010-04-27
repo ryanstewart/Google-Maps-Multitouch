@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) 2010 Ryan Stewart
+http://blog.digitalbackcountry.com
+
+=============================================================================
+"THE BEER-WARE LICENSE" (Revision 42):
+<ryan@ryanstewart.net> wrote this file. As long as you retain this notice you
+can do whatever you want with this stuff. If we meet some day, and you think
+this stuff is worth it, you can buy me a beer in return =Ryan Stewart
+=============================================================================
+-->
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					   xmlns:s="library://ns.adobe.com/flex/spark" 
 					   xmlns:mx="library://ns.adobe.com/flex/mx" 
@@ -57,9 +68,9 @@
 			
 			protected function onResize(event:ResizeEvent):void
 			{
+				// This makes sure the little blue target is always in the center.
 				if(map)
 				{
-					
 					target.x = map.width/2;
 					target.y = map.height/2;	
 				}
@@ -70,6 +81,10 @@
 			protected function onGestureZoom(event:TransformGestureEvent):void
 			{
 				
+				// To use the Gesture Zoom event check the scaleX and scaleY properties of the event.
+				// If the scale is greater than 1, it's a "push" and less than one is a "pinch"
+				// I tweaked it slightly to create a gesture threshold because I found that the API
+				// fired a lot and the map was zooming too much. That's what the counter code is for.
 				if(event.scaleX > 1)
 				{
 					_zoomInCounter += event.scaleX;
@@ -91,12 +106,19 @@
 			
 			protected function onGestureRotate(event:TransformGestureEvent):void
 			{
+				// To use the Gesture Rotate event, check the rotation property of the event.
+				// Just increment it for each event and it should work fine.
+				
 				var att:Attitude = map.getAttitude();
 				map.setAttitude(new Attitude(att.yaw+event.rotation,att.pitch,att.roll));
 			}
 			
 			protected function onGesturePan(event:TransformGestureEvent):void
 			{
+				// The Gesure Pan event changes the offsetX and offsetY properties. I inverted the 
+				// values by multiplying by negative one so I could switch how the attitude of the map 
+				// changed.
+				
 				var att:Attitude = map.getAttitude();
 				map.setAttitude(new Attitude(att.yaw,Math.min(70,att.pitch+event.offsetX*-1),att.roll));
 			}
